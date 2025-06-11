@@ -13,7 +13,8 @@ namespace strategy
 		~SMASupportStrategy() = default;
 		const SignalArray GenerateSignals(const quote::StockQuote& stockQuote) override;
 	private:
-		const config::StrategyConfig& m_strategyConfig{};
+		const config::StrategyConfig&   m_strategyConfig{};
 		const config::IndicatorConfigs& m_indicatorConfigs{};
+		indicator::IndicatorFactory     m_indicatorFactory{};
 	};
 } // namespace strategy

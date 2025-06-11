@@ -3,9 +3,16 @@
 
 namespace indicator
 {
-    ExponentialMovingAverage::ExponentialMovingAverage(const uint8_t period) :
-        m_period(period)
+    ExponentialMovingAverage::ExponentialMovingAverage(const config::IndicatorParams& params) :
+        m_params (params)
     {
+		auto periodItr = m_params.find("period");
+		if (periodItr == m_params.end())
+		{
+			LOG_ERROR("ExponentialMovingAverage::ExponentialMovingAverage(): Period not found in params, returning.");
+			return;
+		}
+		m_period = static_cast<uint16_t>(periodItr->second);
 		m_multiplier = 2.0 / (m_period + 1.0);
 		LOG_INFO("ExponentialMovingAverage::ExponentialMovingAverage(): period: {}, multiplier: {}", m_period, m_multiplier);
     }

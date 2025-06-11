@@ -2,7 +2,6 @@
 
 #include <vector>
 #include "StockQuote.hpp"
-#include "IIndicator.hpp"
 #include "LogMacros.h"
 
 namespace strategy
@@ -21,7 +20,6 @@ namespace strategy
 	public:
 		virtual ~IStrategy() = default;
 		virtual const SignalArray GenerateSignals(
-			const quote::StockQuote& stockQuote,
-			const indicator::IndicatorValues& indicatorValues) = 0;
+			const quote::StockQuote& stockQuote) = 0;
 	};
 } // namespace strategy

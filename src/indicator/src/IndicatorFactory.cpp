@@ -26,14 +26,12 @@ namespace indicator
 		case SMA:
 		{
 			LOG_INFO("IndicatorFactory::CreateIndicator(): Created Simple Moving Average Indicator from factory.");
-			// TODO: MAKE sure the name matches the one provided in the config file
-			// TODO: Make the same changes for EMA also
-			return std::make_unique<SimpleMovingAverage>(indicatorParams.find("period"));
+			return std::make_unique<SimpleMovingAverage>(indicatorParams);
 		}
 		case EMA:
 		{
 			LOG_INFO("IndicatorFactory::CreateIndicator(): Created Exponential Moving Average Indicator from factory.");
-			return std::make_unique<ExponentialMovingAverage>();
+			return std::make_unique<ExponentialMovingAverage>(indicatorParams);
 		}
 		default:
 		{

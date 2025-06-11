@@ -37,13 +37,13 @@ namespace strategy
 		{
 		case SMA_SUPPORT:
 		{
-			LOG_INFO("StrategyFactory::CreateStrategy(): Created SMA Support Strategy from factory.");
-			return std::make_unique<SMASupportStrategy>(config.strategy.params, config.indicators);
+			LOG_INFO("StrategyFactory::CreateStrategy(): Creating SMA Support Strategy from factory.");
+			return std::make_unique<SMASupportStrategy>(config.strategy, config.indicators);
 		}
 		case EMA_SUPPORT:
 		{
-			LOG_INFO("StrategyFactory::CreateStrategy(): Created SMA Support Strategy from factory.");
-			return std::make_unique<EMASupportStrategy>(config.strategy.params, config.indicators);
+			LOG_INFO("StrategyFactory::CreateStrategy(): Creating EMA Support Strategy from factory.");
+			return std::make_unique<EMASupportStrategy>(config.strategy, config.indicators);
 		}
 		/*case SMA_SUPPORT:
 			std::make_unique<SMASupportStrategy>();
@@ -53,7 +53,7 @@ namespace strategy
 			std::make_unique<SMASupportStrategy>();*/
 		default:
 		{
-			LOG_ERROR("StrategyFactory::CreateStrategy(): Strategy Name does not exit");
+			LOG_ERROR("StrategyFactory::CreateStrategy(): Strategy does not exit");
 			return nullptr;
 		}
 		}

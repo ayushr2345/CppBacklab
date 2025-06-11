@@ -3,8 +3,17 @@
 
 namespace indicator
 {
-    SimpleMovingAverage::SimpleMovingAverage(const uint8_t period) : m_period (period)
+    SimpleMovingAverage::SimpleMovingAverage(const config::IndicatorParams& params):
+        m_params (params)
     {
+		auto periodPtr = m_params.find("period");
+		if (periodPtr == m_params.end())
+		{
+			LOG_ERROR("SimpleMovingAverage::SimpleMovingAverage(): Period not found in params, returning.");
+			return;
+		}
+		m_period = static_cast<uint8_t>(periodPtr->second);
+		LOG_INFO("SimpleMovingAverage::SimpleMovingAverage(): Created Simple Moving Average Indicator with period: {}", m_period);
     }
 
     const IndicatorValues SimpleMovingAverage::Calculate(const quote::StockQuote& stockQuote)

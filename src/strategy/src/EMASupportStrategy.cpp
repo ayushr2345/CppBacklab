@@ -2,24 +2,53 @@
 
 namespace strategy
 {
-	EMASupportStrategy::EMASupportStrategy(const config::StrategyParams& strategyParams, const config::IndicatorConfigs& indicatorConfigs)
+	EMASupportStrategy::EMASupportStrategy(
+		const config::StrategyConfig& strategyConfig,
+		const config::IndicatorConfigs& indicatorConfigs
+	) :
+		m_strategyConfig(strategyConfig),
+		m_indicatorConfigs(indicatorConfigs)
 	{
+		LOG_INFO("EMASupportStrategy::EMASupportStrategy(): Created EMA Support Strategy with strategy config: {} and indicator configs: {}",
+			m_strategyConfig.name, m_indicatorConfigs.size());
 	}
 
-	const SignalArray EMASupportStrategy::GenerateSignals(
-		const quote::StockQuote& stockQuote,
-		const indicator::IndicatorValues& ema)
+	const SignalArray EMASupportStrategy::GenerateSignals(const quote::StockQuote& stockQuote)
 	{
-		if (stockQuote.IsValid())
+		if (not stockQuote.IsValid())
 		{
 			LOG_ERROR("EMASupportStrategy::GenerateSignals(): StockQuote provided is invalid, returning empty signals vector.");
 			return SignalArray();
 		}
-		if (ema.empty())
+
+		std::vector<std::unique_ptr<indicator::IIndicator>> indicators;
+		for (auto const& indicatorConfig : m_indicatorConfigs)
 		{
-			LOG_ERROR("EMASupportStrategy::GenerateSignals(): ema vector provided is empty, returning empty signals vector.");
+			std::unique_ptr<indicator::IIndicator> emaIndicator = m_indicatorFactory.CreateIndicator(indicatorConfig.name, indicatorConfig.params);
+			if (not emaIndicator)
+			{
+				LOG_ERROR("EMASupportStrategy::GenerateSignals(): Could not create indicator: ", indicatorConfig.name);
+				return SignalArray();
+			}
+			else
+			{
+				indicators.push_back(std::move(emaIndicator));
+			}
+		}
+
+		// As this is EMA support strategy, need only 1 indicator inside the vector of indicators
+		if (indicators.empty())
+		{
+			LOG_ERROR("EMASupportStrategy::GenerateSignals(): No indicator geneated from the factory, returning empty signals vector.");
 			return SignalArray();
 		}
+		if (indicators.size() > 1)
+		{
+			LOG_WARN("EMASupportStrategy::GenerateSignals(): More than one indicator generated from the factory, using only the first one.");
+		}
+
+		// Calculate EMA values
+		indicator::IndicatorValues ema = indicators.at(0).get()->Calculate(stockQuote);
 
 		const quote::ClosePrices& closePrices = stockQuote.GetClosePrices();
 		if (closePrices.empty())

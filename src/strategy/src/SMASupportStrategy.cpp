@@ -9,6 +9,8 @@ namespace strategy
 		m_strategyConfig   (strategyConfig),
 		m_indicatorConfigs (indicatorConfigs)
 	{
+		LOG_INFO("SMASupportStrategy::SMASupportStrategy(): Created SMA Support Strategy with strategy config: {} and indicator configs: {}",
+				  m_strategyConfig.name, m_indicatorConfigs.size());
 	}
 
 	const SignalArray SMASupportStrategy::GenerateSignals(const quote::StockQuote& stockQuote)
@@ -19,19 +21,38 @@ namespace strategy
 			return SignalArray();
 		}
 
-		indicator::IndicatorFactory indicatorFactory;
+		std::vector<std::unique_ptr<indicator::IIndicator>> indicators;
 		for (auto const& indicatorConfig : m_indicatorConfigs)
 		{
-			std::unique_ptr<indicator::IIndicator> smaIndicator = indicatorFactory.CreateIndicator(indicatorConfig.name, indicatorConfig.params);
-			if (smaIndicator)
+			std::unique_ptr<indicator::IIndicator> smaIndicator = m_indicatorFactory.CreateIndicator(indicatorConfig.name, indicatorConfig.params);
+			if (not smaIndicator)
 			{
-
+				LOG_ERROR("SMASupportStrategy::GenerateSignals(): Could not create indicator: ", indicatorConfig.name);
+				return SignalArray();
+			}
+			else
+			{
+				indicators.push_back(std::move(smaIndicator));
 			}
 		}
 
+		// As this is SMA support strategy, need only 1 indicator inside the vector of indicators
+		if (indicators.empty())
+		{
+			LOG_ERROR("SMASupportStrategy::GenerateSignals(): No indicator geneated from the factory, returning empty signals vector.");
+			return SignalArray();
+		}
+		if (indicators.size() > 1)
+		{
+			LOG_WARN("SMASupportStrategy::GenerateSignals(): More than one indicator generated from the factory, using only the first one.");
+		}
+
+		// Calculate SMA values
+		indicator::IndicatorValues sma = indicators.at(0).get()->Calculate(stockQuote);
 		if (sma.empty())
 		{
-			LOG_ERROR("SMASupportStrategy::GenerateSignals(): SMA vector provided is empty, returning empty signals vector.");
+			LOG_ERROR("SMASupportStrategy::GenerateSignals(): Could not calculate the SMA values for stock quote: {}",
+					   stockQuote.GetTickerName());
 			return SignalArray();
 		}
 
